@@ -40,7 +40,7 @@ const collegeEventInfo = {
     "Sports Gala": {
         title: "Inter-Department Sports Gala",
         date: "2026-10-15",
-        type: "Sports Gala",
+        type: "Sport's Gala",
         description: "Annual inter-department tournament featuring cricket, football, athletics, and badminton championships."
     },
     "Music Night": {
