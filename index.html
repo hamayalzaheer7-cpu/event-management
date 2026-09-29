@@ -1,201 +1,289 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Management System</title>
+    <title>College Event Management System</title>
+    <!-- Bootstrap CSS for responsive layout -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Header -->
+    <!-- Header Navigation -->
     <header class="header">
-        <div>
-            <h1>Eventify</h1>
-            <p>Manage all your events in one place</p>
+        <div class="header-inner container d-flex justify-content-between align-items-center py-3">
+            <a href="#" class="brand text-decoration-title d-flex align-items-center gap-2">
+                <span class="brand-icon">🎓</span>
+                <span>Campus <b>Events Hub</b></span>
+            </a>
+            <div class="header-right d-flex align-items-center gap-3">
+                <span class="header-tag d-none d-md-inline">Explore <i>•</i> Register <i>•</i> Participate</span>
+                <button id="themeToggle" class="theme-toggle btn btn-sm" type="button" aria-label="Switch color theme">
+                    <span id="themeIcon">☾</span>
+                </button>
+            </div>
         </div>
-        <button id="themeBtn" class="theme-btn">🌙 Dark Mode</button>
     </header>
 
-    <main class="container">
+    <main class="container py-4">
 
-        <!-- Welcome Section -->
-        <section class="welcome">
-            <div>
-                <h2>Event Management Dashboard</h2>
-                <p>Create, organize and manage your events easily.</p>
+        <!-- Welcome Banner -->
+        <section class="hero p-4 p-md-5 mb-4 rounded-4 shadow-sm">
+            <div class="row align-items-center">
+                <div class="col-lg-7 hero-content">
+                    <span class="eyebrow text-uppercase fw-bold">✦ COLLEGE FESTIVALS & REGISTRATIONS</span>
+                    <h1 class="display-6 fw-bold mt-2 mb-3">Welcome to <span>Campus Event Portal!</span></h1>
+                    <p class="text-muted mb-4">Discover upcoming college events, check detailed descriptions, and register for your favorite activities instantly.</p>
+                    <a href="#featuredEventsSection" class="hero-button btn btn-primary px-4 py-2 fw-bold">Explore College Events</a>
+                </div>
             </div>
-            <button onclick="showForm()" class="primary-btn">+ Add New Event</button>
+        </section>
+
+        <!-- Pre-Defined College Events (Bootstrap Cards) -->
+        <section class="mb-5" id="featuredEventsSection">
+            <div class="section-heading mb-4">
+                <span class="eyebrow text-uppercase fw-bold text-primary">FEATURED ACTIVITIES</span>
+                <h2>College Events Showcase</h2>
+                <p class="text-muted">Browse official campus events and apply right away.</p>
+            </div>
+
+            <div class="row g-4" id="collegeEventsContainer">
+                <!-- Card 1: Sports Gala -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 event-bootstrap-card shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-purple-subtle text-purple fw-bold">Sports</span>
+                                <span class="small text-muted">📅 Oct 15, 2026</span>
+                            </div>
+                            <h4 class="card-title h5 fw-bold">Sports Gala</h4>
+                            <p class="card-text text-muted small flex-grow-1">Annual inter-department sports competition featuring cricket, football, athletics, and badminton.</p>
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-sm btn-outline-primary w-50" onclick="showCollegeEventDetails('Sports Gala')">Details</button>
+                                <button class="btn btn-sm btn-primary w-50" onclick="applyForCollegeEvent('Sports Gala')">Apply Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Music Night -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 event-bootstrap-card shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-pink-subtle text-pink fw-bold">Cultural</span>
+                                <span class="small text-muted">📅 Oct 22, 2026</span>
+                            </div>
+                            <h4 class="card-title h5 fw-bold">Music Night</h4>
+                            <p class="card-text text-muted small flex-grow-1">An electrifying musical eve featuring live student performances, beatboxing, and guest singers.</p>
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-sm btn-outline-primary w-50" onclick="showCollegeEventDetails('Music Night')">Details</button>
+                                <button class="btn btn-sm btn-primary w-50" onclick="applyForCollegeEvent('Music Night')">Apply Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Culture Day -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 event-bootstrap-card shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-blue-subtle text-blue fw-bold">Tradition</span>
+                                <span class="small text-muted">📅 Nov 05, 2026</span>
+                            </div>
+                            <h4 class="card-title h5 fw-bold">Culture Day</h4>
+                            <p class="card-text text-muted small flex-grow-1">Celebrate regional heritage with traditional dress shows, cultural food stalls, and folk dances.</p>
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-sm btn-outline-primary w-50" onclick="showCollegeEventDetails('Culture Day')">Details</button>
+                                <button class="btn btn-sm btn-primary w-50" onclick="applyForCollegeEvent('Culture Day')">Apply Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Society Fair -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 event-bootstrap-card shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-green-subtle text-green fw-bold">Academic</span>
+                                <span class="small text-muted">📅 Nov 12, 2026</span>
+                            </div>
+                            <h4 class="card-title h5 fw-bold">Society Fair</h4>
+                            <p class="card-text text-muted small flex-grow-1">Explore different university societies, project exhibitions, coding hackathons, and robotics displays.</p>
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-sm btn-outline-primary w-50" onclick="showCollegeEventDetails('Society Fair')">Details</button>
+                                <button class="btn btn-sm btn-primary w-50" onclick="applyForCollegeEvent('Society Fair')">Apply Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- Dashboard Statistics -->
-        <section class="stats">
-            <div class="stat-card">
-                <span>📅</span>
-                <h3>Total Events</h3>
-                <p id="totalEvents">0</p>
+        <section class="row g-3 mb-4 stats-grid">
+            <div class="col-md-4">
+                <div class="stat-card p-3 rounded-4 shadow-sm d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-purple-subtle text-purple p-3 rounded-3 fs-4">📋</div>
+                    <div><p class="text-muted mb-0 small">Total Registrations</p><h2 id="totalEvents" class="fs-3 fw-bold mb-0">0</h2></div>
+                </div>
             </div>
-
-            <div class="stat-card">
-                <span>⏳</span>
-                <h3>Upcoming</h3>
-                <p id="upcomingEvents">0</p>
+            <div class="col-md-4">
+                <div class="stat-card p-3 rounded-4 shadow-sm d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-green-subtle text-green p-3 rounded-3 fs-4">✓</div>
+                    <div><p class="text-muted mb-0 small">Upcoming Registrations</p><h2 id="upcomingEvents" class="fs-3 fw-bold mb-0">0</h2></div>
+                </div>
             </div>
-
-            <div class="stat-card">
-                <span>✅</span>
-                <h3>Completed</h3>
-                <p id="completedEvents">0</p>
-            </div>
-
-            <div class="stat-card">
-                <span>🎉</span>
-                <h3>Event Categories</h3>
-                <p id="totalCategories">0</p>
+            <div class="col-md-4">
+                <div class="stat-card p-3 rounded-4 shadow-sm d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-pink-subtle text-pink p-3 rounded-3 fs-4">☆</div>
+                    <div><p class="text-muted mb-0 small">This Month</p><h2 id="monthlyEvents" class="fs-3 fw-bold mb-0">0</h2></div>
+                </div>
             </div>
         </section>
 
-        <!-- Add/Edit Event Form -->
-        <section class="form-section" id="formSection">
-            <h2 id="formHeading">Add New Event</h2>
+        <!-- Student Registration Form (CRUD Form) -->
+        <section class="panel form-panel p-4 rounded-4 shadow-sm mb-5" id="eventFormSection">
+            <div class="section-heading mb-4">
+                <span class="eyebrow text-uppercase fw-bold text-primary">STUDENT PORTAL</span>
+                <h2 id="formHeading">Event Registration & Participation</h2>
+                <p class="text-muted small">Fill out your details to register or sign up for specific event activities.</p>
+            </div>
 
             <form id="eventForm">
-                <div class="form-grid">
-
-                    <div>
-                        <label for="eventTitle">Event Title *</label>
-                        <input type="text" id="eventTitle"
-                               placeholder="Enter event title" required>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="eventTitle" class="form-label fw-bold small">Student Name & Title <span>*</span></label>
+                        <input type="text" id="eventTitle" class="form-control" maxlength="100" placeholder="e.g., Hamayal - Sports Registration" required>
                     </div>
 
-                    <div>
-                        <label for="createdDate">Created Date *</label>
-                        <input type="date" id="createdDate" required>
-                    </div>
-
-                    <div>
-                        <label for="eventDate">Event Date *</label>
-                        <input type="date" id="eventDate" required>
-                    </div>
-
-                    <div>
-                        <label for="eventTime">Event Time</label>
-                        <input type="time" id="eventTime">
-                    </div>
-
-                    <div>
-                        <label for="eventType">Event Type *</label>
-                        <select id="eventType" required>
-                            <option value="">Select Category</option>
-                            <option>Sports Gala</option>
-                            <option>Farewell Party</option>
-                            <option>Seminar</option>
-                            <option>Workshop</option>
-                            <option>Birthday</option>
-                            <option>Conference</option>
-                            <option>Cultural Fest</option>
-                            <option>Competition</option>
-                            <option>Other</option>
+                    <div class="col-md-6">
+                        <label for="eventType" class="form-label fw-bold small">Event Type <span>*</span></label>
+                        <select id="eventType" class="form-select" required onchange="updateParticipationOptions()">
+                            <option value="">Select event type</option>
+                            <option value="Sports Gala">Sports Gala</option>
+                            <option value="Music Night">Music Night</option>
+                            <option value="Culture Day">Culture Day</option>
+                            <option value="Society Fair">Society Fair</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
 
-                    <div>
-                        <label for="eventLocation">Location</label>
-                        <input type="text" id="eventLocation"
-                               placeholder="Event venue">
+                    <div class="col-md-6">
+                        <label for="createdDate" class="form-label fw-bold small">Registration Date <span>*</span></label>
+                        <input type="date" id="createdDate" class="form-control" required>
                     </div>
 
-                    <div>
-                        <label for="eventOrganizer">Organizer</label>
-                        <input type="text" id="eventOrganizer"
-                               placeholder="Organizer name">
+                    <div class="col-md-6">
+                        <label for="eventDate" class="form-label fw-bold small">Event Date <span>*</span></label>
+                        <input type="date" id="eventDate" class="form-control" required>
                     </div>
 
-                    <div>
-                        <label for="eventCapacity">Participant Capacity</label>
-                        <input type="number" id="eventCapacity" min="1"
-                               placeholder="Maximum participants">
+                    <!-- Dynamic Participation Radio / Checkbox Options -->
+                    <div class="col-12" id="participationSection">
+                        <label class="form-label fw-bold small">Optional Participation Activities (Select what you want to join):</label>
+                        <div id="participationContainer" class="d-flex flex-wrap gap-3 p-3 border rounded-3 bg-light-subtle">
+                            <span class="text-muted small">Please select an event type above to view participation activities.</span>
+                        </div>
                     </div>
 
-                    <div class="full-width">
-                        <label for="eventDescription">Description *</label>
-                        <textarea id="eventDescription"
-                                  placeholder="Write event details..."
-                                  rows="4" required></textarea>
+                    <div class="col-12">
+                        <label for="description" class="form-label fw-bold small">Additional Comments / Student Details <span>*</span></label>
+                        <textarea id="description" class="form-control" rows="3" maxlength="1000" placeholder="Enter student roll number, department, or special notes..." required></textarea>
                     </div>
-
                 </div>
 
-                <p id="formMessage" class="message"></p>
-
-                <div class="form-buttons">
-                    <button type="submit" class="primary-btn" id="saveBtn">
-                        Add Event
-                    </button>
-                    <button type="button" class="secondary-btn"
-                            onclick="resetForm()">Clear Form</button>
-                    <button type="button" class="secondary-btn"
-                            onclick="hideForm()">Cancel</button>
+                <div class="form-actions mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary fw-bold" id="submitButton">＋ Submit Registration</button>
+                    <button type="button" class="btn btn-secondary fw-bold" id="cancelButton" hidden>↩ Cancel Edit</button>
+                    <button type="button" class="btn btn-outline-secondary fw-bold" id="clearButton">× Clear Form</button>
                 </div>
+
+                <p id="message" class="message mt-3 fw-bold small" role="status" aria-live="polite"></p>
             </form>
         </section>
 
-        <!-- Search and Filter -->
-        <section class="event-section">
-            <div class="section-heading">
+        <!-- Registered Events Section -->
+        <section class="events-section mb-5" id="eventsSection">
+            <div class="section-heading events-title d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2>My Events</h2>
-                    <p>View and manage your saved events.</p>
+                    <span class="eyebrow text-uppercase fw-bold text-primary">DATABASE RECORDS</span>
+                    <h2>Registered Students & Events <span class="title-star">✦</span></h2>
+                    <p class="text-muted small">Manage, update, or remove current submissions stored locally.</p>
+                </div>
+                <span class="event-count badge bg-primary-subtle text-primary p-2"><b id="shownEvents">0</b> records shown</span>
+            </div>
+
+            <!-- Search and Filter Controls -->
+            <div class="filters row g-3 mb-4">
+                <div class="col-md-8">
+                    <div class="search-box input-group">
+                        <span class="input-group-text bg-white border-end-0">⌕</span>
+                        <input type="search" id="searchInput" class="form-control border-start-0" placeholder="Search by student name or event title...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select id="filterType" class="form-select" aria-label="Filter events by type">
+                        <option value="All">All Event Types</option>
+                        <option value="Sports Gala">Sports Gala</option>
+                        <option value="Music Night">Music Night</option>
+                        <option value="Culture Day">Culture Day</option>
+                        <option value="Society Fair">Society Fair</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="filters">
-                <input type="search" id="searchInput"
-                       placeholder="🔍 Search events by title...">
-
-                <select id="filterType">
-                    <option value="All">All Event Types</option>
-                    <option>Sports Gala</option>
-                    <option>Farewell Party</option>
-                    <option>Seminar</option>
-                    <option>Workshop</option>
-                    <option>Birthday</option>
-                    <option>Conference</option>
-                    <option>Cultural Fest</option>
-                    <option>Competition</option>
-                    <option>Other</option>
-                </select>
-
-                <select id="filterStatus">
-                    <option value="All">All Statuses</option>
-                    <option value="Upcoming">Upcoming</option>
-                    <option value="Today">Today</option>
-                    <option value="Completed">Completed</option>
-                </select>
-            </div>
-
-            <p id="eventCount" class="event-count">0 events found</p>
-
-            <!-- Events appear here -->
-            <div id="eventsContainer" class="events-grid"></div>
+            <!-- Dynamic Event Cards Container -->
+            <div id="eventsContainer" class="events-grid row g-4"></div>
         </section>
 
     </main>
 
     <!-- Event Details Modal -->
-    <div id="detailsModal" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeModal()">✕</button>
-            <h2 id="modalTitle">Event Details</h2>
-            <div id="modalDetails"></div>
+    <div id="detailsModal" class="modal fade-in" role="dialog" aria-modal="true" hidden>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div id="modalBanner" class="modal-banner p-4 text-white position-relative">
+                    <button type="button" id="closeModal" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" aria-label="Close"></button>
+                    <span id="modalBannerIcon" class="fs-2">✦</span>
+                    <span class="modal-banner-label small text-uppercase tracking-wider fw-bold">EVENT DETAILS</span>
+                </div>
+                <div class="modal-body p-4 bg-white">
+                    <span id="modalType" class="badge bg-primary-subtle text-primary mb-2">Seminar</span>
+                    <h2 id="modalTitle" class="h4 fw-bold">Event Title</h2>
+                    <hr>
+                    <div class="d-flex align-items-start gap-2 mb-2">
+                        <span>📅</span>
+                        <p class="mb-0 small text-muted"><b>Event Date:</b> <span id="modalEventDate" class="text-dark"></span></p>
+                    </div>
+                    <div class="d-flex align-items-start gap-2 mb-3">
+                        <span>📋</span>
+                        <p class="mb-0 small text-muted"><b>Registration Date:</b> <span id="modalCreatedDate" class="text-dark"></span></p>
+                    </div>
+                    <div class="mb-3">
+                        <b class="small d-block mb-1">Description & Activities:</b>
+                        <p id="modalDescription" class="text-muted small bg-light p-3 rounded-3 mb-0"></p>
+                    </div>
+                    <button type="button" id="modalCloseButton" class="btn btn-primary w-100 fw-bold">Close Details</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <footer>
-        <p>© 2026 Eventify | Event Management System</p>
+    <!-- Footer -->
+    <footer class="footer border-top py-4 bg-white">
+        <div class="container text-center text-muted small">
+            <p class="text-primary fw-bold mb-1">✦ College Event Management System</p>
+            <span>Built with HTML5, Bootstrap 5, and Vanilla JavaScript (CRUD & LocalStorage)</span>
+        </div>
     </footer>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
