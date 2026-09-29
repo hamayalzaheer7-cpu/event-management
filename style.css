@@ -773,7 +773,7 @@ a {
 }
 
 .detail-line > span { color: var(--primary); font-size: 19px; }
-.detail-line p { font-size: 13px; color: var(--muted); }
+.detail-line p { font-size: 14px; color: var(--muted); }
 .detail-description { margin-top: 18px; font-size: 13px; }
 .detail-description p { margin-top: 6px; color: var(--muted); white-space: pre-wrap; }
 .modal-close-btn { width: 100%; margin-top: 22px; }
