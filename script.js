@@ -1,8 +1,8 @@
 // ============================================
-// COLLEGE EVENT MANAGEMENT SYSTEM - JAVASCRIPT
+// EVENT MANAGEMENT SYSTEM - JAVASCRIPT
 // ============================================
 
-// DOM Element References
+// Get HTML elements
 const eventForm = document.getElementById("eventForm");
 const eventTitle = document.getElementById("eventTitle");
 const createdDate = document.getElementById("createdDate");
@@ -33,34 +33,33 @@ const modalCloseButton = document.getElementById("modalCloseButton");
 const themeToggle = document.getElementById("themeToggle");
 const themeIcon = document.getElementById("themeIcon");
 
-// State Management
 let editingEventId = null;
 
-// Pre-defined college event information for Details View
+// Pre-defined college events info for modal details
 const collegeEventInfo = {
     "Sports Gala": {
-        title: "Sports Gala 2026",
+        title: "Inter-Department Sports Gala",
         date: "2026-10-15",
         type: "Sports Gala",
-        description: "The biggest annual sports festival! Events include Cricket tournament, 100m sprint, Tug of war, and Badminton championships. Open to all registered students."
+        description: "Annual inter-department tournament featuring cricket, football, athletics, and badminton championships."
     },
     "Music Night": {
-        title: "Music Night Extravaganza",
+        title: "Annual Music Night",
         date: "2026-10-22",
         type: "Music Night",
-        description: "An incredible evening of melody and rhythm. Featuring acoustic performances, battle of the bands, and celebrity student singers."
+        description: "An electrifying evening featuring live student performances, beatboxing, battle of bands, and guest singers."
     },
     "Culture Day": {
         title: "Traditional Culture Day",
         date: "2026-11-05",
         type: "Culture Day",
-        description: "Showcasing provincial diversity with cultural dresses, regional cuisine stalls, poetry recitation, and traditional folk dances."
+        description: "Celebrate regional heritage with traditional dress shows, cultural food stalls, poetry recitation, and folk dances."
     },
     "Society Fair": {
-        title: "Annual Society Fair",
+        title: "University Society Fair",
         date: "2026-11-12",
         type: "Society Fair",
-        description: "Explore campus societies, witness robotics displays, coding competition finals, literature debates, and art exhibitions."
+        description: "Explore campus societies, project exhibitions, coding hackathons, literature debates, and robotics displays."
     }
 };
 
@@ -81,60 +80,59 @@ function updateParticipationOptions() {
     } else if (selectedType === "Society Fair") {
         options = ["Project Exhibitor", "Coding Hackathon", "Robotics Display", "Literature Debate"];
     } else {
-        options = ["General General Participant", "Volunteer", "Organizer"];
+        options = ["General Attendee", "Volunteer", "Organizer"];
     }
 
     options.forEach(function (opt) {
-        const div = document.createElement("div");
-        div.className = "form-check form-check-inline";
+        const label = document.createElement("label");
+        label.className = "participation-chip";
 
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        checkbox.className = "form-check-input participation-checkbox";
-        checkbox.name = "participation";
+        checkbox.className = "participation-checkbox";
         checkbox.value = opt;
-        checkbox.id = "part_" + opt.replace(/\s+/g, '_');
 
-        const label = document.createElement("label");
-        label.className = "form-check-label small";
-        label.htmlFor = checkbox.id;
-        label.textContent = opt;
+        const span = document.createElement("span");
+        span.textContent = opt;
 
-        div.append(checkbox, label);
-        participationContainer.appendChild(div);
+        label.append(checkbox, span);
+        participationContainer.appendChild(label);
     });
 }
 
-// Pre-fill form and scroll down when clicking "Apply Now" on featured cards
 function applyForCollegeEvent(eventName) {
     eventType.value = eventName;
     eventTitle.value = eventName + " Registration";
+    if (collegeEventInfo[eventName]) {
+        eventDate.value = collegeEventInfo[eventName].date;
+    }
     updateParticipationOptions();
-    
+
     document.getElementById("eventFormSection").scrollIntoView({ behavior: "smooth" });
     eventTitle.focus();
     showMessage("Form populated for " + eventName + "! Fill in your details and submit.", "success");
 }
 
-// Show modal details for pre-defined college events
 function showCollegeEventDetails(eventName) {
     const info = collegeEventInfo[eventName];
     if (!info) return;
+
+    const style = getEventStyle(info.type);
 
     document.getElementById("modalTitle").textContent = info.title;
     document.getElementById("modalType").textContent = info.type;
     document.getElementById("modalEventDate").textContent = info.date;
     document.getElementById("modalCreatedDate").textContent = "Official College Schedule";
     document.getElementById("modalDescription").textContent = info.description;
-    document.getElementById("modalBannerIcon").textContent = "🎓";
+
+    document.getElementById("modalBannerIcon").textContent = style.icon;
+    document.getElementById("modalBanner").className = "modal-banner " + style.cover;
 
     detailsModal.hidden = false;
-    detailsModal.style.display = "block";
+    closeModal.focus();
 }
 
-// ============================================
 // DATE HELPER
-// ============================================
 function getToday() {
     const today = new Date();
     const year = today.getFullYear();
@@ -143,207 +141,276 @@ function getToday() {
     return `${year}-${month}-${day}`;
 }
 
-// ============================================
-// LOCAL STORAGE DATA LOADING (CRUD - Read)
-// ============================================
+// LOAD EVENTS FROM LOCALSTORAGE
 let events = [];
 
 try {
     const savedEvents = localStorage.getItem("collegeEventsData");
     if (savedEvents) {
-        const parsed = JSON.parse(savedEvents);
-        if (Array.isArray(parsed)) {
-            events = parsed;
+        const parsedEvents = JSON.parse(savedEvents);
+        if (Array.isArray(parsedEvents)) {
+            events = parsedEvents;
         }
     }
-} catch (err) {
+} catch (error) {
     events = [];
-    console.error("Error loading local storage data", err);
+    console.error("Could not load saved events.", error);
 }
 
-// Save to LocalStorage Function
 function saveEvents() {
     try {
         localStorage.setItem("collegeEventsData", JSON.stringify(events));
         return true;
-    } catch (err) {
-        showMessage("Storage error: Could not save data.", "error");
+    } catch (error) {
+        console.error("Could not save events.", error);
+        showMessage("Could not save data. Storage unavailable.", "error");
         return false;
     }
 }
 
-// Helper for status messages
 function showMessage(text, type) {
     message.textContent = text;
-    message.className = "message mt-3 fw-bold small " + (type === "success" ? "text-success" : "text-danger");
+    message.className = "message " + type;
 }
 
-// Clear Form
 function clearForm() {
     eventForm.reset();
     editingEventId = null;
+
     formHeading.textContent = "Event Registration & Participation";
     submitButton.textContent = "＋ Submit Registration";
     cancelButton.hidden = true;
+
     createdDate.value = getToday();
-    participationContainer.innerHTML = '<span class="text-muted small">Please select an event type above to view participation activities.</span>';
+    participationContainer.innerHTML = '<span class="muted-text">Please select an event type above to view participation options.</span>';
 }
 
-// ============================================
-// CRUD FORM SUBMISSION (Create & Update)
-// ============================================
-eventForm.addEventListener("submit", function (e) {
-    e.preventDefault();
+function isValidDate(value) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const parts = value.split("-").map(Number);
+    const date = new Date(parts[0], parts[1] - 1, parts[2]);
+    return date.getFullYear() === parts[0] &&
+        date.getMonth() === parts[1] - 1 &&
+        date.getDate() === parts[2];
+}
 
-    const titleVal = eventTitle.value.trim();
-    const createdVal = createdDate.value;
-    const eventDateVal = eventDate.value;
-    const typeVal = eventType.value;
-    const descVal = description.value.trim();
+function validateForm() {
+    const title = eventTitle.value.trim();
+    const created = createdDate.value;
+    const date = eventDate.value;
+    const type = eventType.value;
+    const eventDescription = description.value.trim();
 
-    if (!titleVal || !createdVal || !eventDateVal || !typeVal || !descVal) {
-        showMessage("Please fill out all required fields.", "error");
-        return;
+    if (!title || !created || !date || !type || !eventDescription) {
+        showMessage("Please fill in all required fields.", "error");
+        return false;
     }
 
-    // Collect selected participation checkboxes
+    if (!isValidDate(created) || !isValidDate(date)) {
+        showMessage("Please enter valid dates.", "error");
+        return false;
+    }
+
+    return true;
+}
+
+// CREATE OR UPDATE EVENT (CRUD)
+eventForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    if (!validateForm()) return;
+
+    // Collect checked participation activities
     const selectedParticipations = [];
     document.querySelectorAll(".participation-checkbox:checked").forEach(function (cb) {
         selectedParticipations.push(cb.value);
     });
 
-    const formPayload = {
-        title: titleVal,
-        createdDate: createdVal,
-        eventDate: eventDateVal,
-        type: typeVal,
-        description: descVal,
+    const eventData = {
+        title: eventTitle.value.trim(),
+        createdDate: createdDate.value,
+        eventDate: eventDate.value,
+        type: eventType.value,
+        description: description.value.trim(),
         participations: selectedParticipations
     };
 
+    const previousEvents = events;
+
     if (editingEventId !== null) {
-        // UPDATE existing record
         const index = events.findIndex(item => item.id === editingEventId);
-        if (index !== -1) {
-            events[index] = { id: editingEventId, ...formPayload };
-            if (saveEvents()) {
-                renderEvents();
-                clearForm();
-                showMessage("Registration updated successfully!", "success");
-            }
+        if (index === -1) {
+            showMessage("Event not found.", "error");
+            clearForm();
+            return;
         }
-    } else {
-        // CREATE new record
-        const newRecord = {
-            id: Date.now().toString() + "-" + Math.random().toString(36).slice(2),
-            ...formPayload
-        };
-        events.push(newRecord);
+
+        events = events.slice();
+        events[index] = { id: events[index].id, ...eventData };
+
         if (saveEvents()) {
             renderEvents();
             clearForm();
-            showMessage("Registration added successfully!", "success");
+            showMessage("Registration updated successfully!", "success");
+        } else {
+            events = previousEvents;
+        }
+    } else {
+        const newEvent = {
+            id: Date.now().toString() + "-" + Math.random().toString(36).slice(2),
+            ...eventData
+        };
+
+        events = events.concat(newEvent);
+
+        if (saveEvents()) {
+            renderEvents();
+            clearForm();
+            showMessage("Registration submitted successfully!", "success");
+        } else {
+            events = previousEvents;
         }
     }
 });
 
-// ============================================
-// RENDER EVENTS & STATISTICS (CRUD - Read / UI)
-// ============================================
+// EVENT CARD STYLING & ICONS
+function getEventStyle(type) {
+    const styles = {
+        "Sports Gala": { cover: "cover-purple", icon: "⚽" },
+        "Music Night": { cover: "cover-pink", icon: "🎉" },
+        "Culture Day": { cover: "cover-blue", icon: "🎓" },
+        "Society Fair": { cover: "cover-green", icon: "💻" },
+        "Other": { cover: "cover-indigo", icon: "🎵" }
+    };
+    return styles[type] || { cover: "cover-orange", icon: "✦" };
+}
+
+function createTextElement(tag, className, text) {
+    const element = document.createElement(tag);
+    element.className = className;
+    element.textContent = text;
+    return element;
+}
+
+// RENDER EVENTS AND DASHBOARD STATS
 function renderEvents() {
-    eventsContainer.innerHTML = "";
+    eventsContainer.replaceChildren();
 
     const searchText = searchInput.value.trim().toLowerCase();
-    const selectedFilter = filterType.value;
+    const selectedType = filterType.value;
     const today = getToday();
     const now = new Date();
-    const curMonth = String(now.getMonth() + 1).padStart(2, "0");
-    const curYear = String(now.getFullYear());
+    const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
+    const currentYear = String(now.getFullYear());
 
-    // Update Dashboard Metrics
     totalEvents.textContent = events.length;
-    upcomingEvents.textContent = events.filter(i => i.eventDate >= today).length;
-    monthlyEvents.textContent = events.filter(i => i.eventDate.startsWith(curYear + "-" + curMonth)).length;
 
-    // Filter Logic
-    const filtered = events.filter(item => {
-        const matchSearch = item.title.toLowerCase().includes(searchText);
-        const matchType = selectedFilter === "All" || item.type === selectedFilter;
-        return matchSearch && matchType;
+    upcomingEvents.textContent = events.filter(item => item.eventDate >= today).length;
+
+    monthlyEvents.textContent = events.filter(item => item.eventDate.startsWith(currentYear + "-" + currentMonth)).length;
+
+    const filteredEvents = events.filter(item => {
+        const matchesSearch = item.title.toLowerCase().includes(searchText);
+        const matchesType = selectedType === "All" || item.type === selectedType;
+        return matchesSearch && matchesType;
     });
 
-    shownEvents.textContent = filtered.length;
+    shownEvents.textContent = filteredEvents.length;
 
-    if (filtered.length === 0) {
-        eventsContainer.innerHTML = `
-            <div class="col-12 text-center py-5 text-muted bg-light rounded-4 border border-dashed">
-                <p class="mb-1 fw-bold">No event registrations found.</p>
-                <small>Fill out the form above or click "Apply Now" on any college card.</small>
-            </div>
-        `;
+    if (filteredEvents.length === 0) {
+        const emptyBox = document.createElement("div");
+        emptyBox.className = "empty-message";
+
+        const icon = createTextElement("div", "empty-icon", "▦");
+        const heading = createTextElement("h3", "", events.length === 0 ? "No registrations added yet!" : "No matching records found.");
+        const paragraph = createTextElement("p", "", events.length === 0 ? "Fill out the form above or click Apply Now on any college card." : "Try another title or event type.");
+
+        emptyBox.append(icon, heading, paragraph);
+        eventsContainer.appendChild(emptyBox);
         return;
     }
 
-    filtered.forEach(item => {
-        const col = document.createElement("div");
-        col.className = "col-md-6 col-lg-4";
+    filteredEvents.forEach(item => {
+        const style = getEventStyle(item.type);
 
-        const partText = item.participations && item.participations.length > 0 
-            ? item.participations.join(", ") 
-            : "General Attendee";
+        const card = document.createElement("article");
+        card.className = "event-card";
 
-        col.innerHTML = `
-            <div class="card h-100 shadow-sm border">
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-primary-subtle text-primary">${item.type}</span>
-                        <small class="text-muted">📅 ${item.eventDate}</small>
-                    </div>
-                    <h5 class="card-title fw-bold text-dark">${item.title}</h5>
-                    <p class="card-text text-muted small flex-grow-1 mb-2">${item.description}</p>
-                    <div class="mb-3 small text-secondary bg-light p-2 rounded-2">
-                        <b>Activities:</b> ${partText}
-                    </div>
-                    <div class="d-flex gap-2 pt-2 border-top">
-                        <button class="btn btn-sm btn-outline-primary w-33" onclick="viewRecord('${item.id}')">Details</button>
-                        <button class="btn btn-sm btn-outline-secondary w-33" onclick="editRecord('${item.id}')">Edit</button>
-                        <button class="btn btn-sm btn-outline-danger w-33" onclick="deleteRecord('${item.id}')">Delete</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        eventsContainer.appendChild(col);
+        const cover = document.createElement("div");
+        cover.className = "event-cover " + style.cover;
+
+        const badge = createTextElement("span", "cover-badge", item.type);
+        const dateBadge = createTextElement("span", "cover-date", item.eventDate);
+        const coverIcon = createTextElement("span", "cover-icon", style.icon);
+
+        cover.append(badge, dateBadge, coverIcon);
+
+        const body = document.createElement("div");
+        body.className = "event-card-body";
+
+        const title = createTextElement("h3", "", item.title);
+        const created = createTextElement("p", "event-meta", "▦  Registered: " + item.createdDate);
+        const typeLine = createTextElement("p", "event-meta", "◇  " + item.type);
+
+        let partSummary = item.participations && item.participations.length > 0 
+            ? "Participating in: " + item.participations.join(", ") 
+            : item.description;
+
+        const descEl = createTextElement("p", "event-description", partSummary.length > 95 ? partSummary.substring(0, 95) + "..." : partSummary);
+
+        const buttons = document.createElement("div");
+        buttons.className = "card-buttons";
+
+        const viewButton = createTextElement("button", "btn btn-view", "◎ View Details");
+        viewButton.type = "button";
+        const editButton = createTextElement("button", "btn btn-edit", "✎ Edit");
+        editButton.type = "button";
+        const deleteButton = createTextElement("button", "btn btn-delete", "♲ Delete");
+        deleteButton.type = "button";
+
+        viewButton.addEventListener("click", () => viewEvent(item.id));
+        editButton.addEventListener("click", () => editEvent(item.id));
+        deleteButton.addEventListener("click", () => deleteEvent(item.id));
+
+        buttons.append(viewButton, editButton, deleteButton);
+        body.append(title, created, typeLine, descEl, buttons);
+        card.append(cover, body);
+
+        eventsContainer.appendChild(card);
     });
 }
 
-// ============================================
-// CRUD OPERATIONS (Read Details, Update, Delete)
-// ============================================
-function viewRecord(id) {
-    const item = events.find(e => e.id === id);
+// VIEW, EDIT, DELETE (CRUD OPERATIONS)
+function viewEvent(id) {
+    const item = events.find(event => event.id === id);
     if (!item) return;
+
+    const style = getEventStyle(item.type);
 
     document.getElementById("modalTitle").textContent = item.title;
     document.getElementById("modalType").textContent = item.type;
     document.getElementById("modalEventDate").textContent = item.eventDate;
     document.getElementById("modalCreatedDate").textContent = item.createdDate;
     
-    let detailsHTML = item.description;
+    let fullDesc = item.description;
     if (item.participations && item.participations.length > 0) {
-        detailsHTML += "<br><br><b>Participating in:</b> " + item.participations.join(", ");
+        fullDesc += "\n\nSelected Activities:\n• " + item.participations.join("\n• ");
     }
-    document.getElementById("modalDescription").innerHTML = detailsHTML;
-    document.getElementById("modalBannerIcon").textContent = "📋";
+    document.getElementById("modalDescription").textContent = fullDesc;
+
+    document.getElementById("modalBannerIcon").textContent = style.icon;
+    document.getElementById("modalBanner").className = "modal-banner " + style.cover;
 
     detailsModal.hidden = false;
-    detailsModal.style.display = "block";
+    closeModal.focus();
 }
 
-function editRecord(id) {
-    const item = events.find(e => e.id === id);
+function editEvent(id) {
+    const item = events.find(event => event.id === id);
     if (!item) return;
 
     editingEventId = id;
+
     eventTitle.value = item.title;
     createdDate.value = item.createdDate;
     eventDate.value = item.eventDate;
@@ -351,11 +418,10 @@ function editRecord(id) {
     description.value = item.description;
 
     updateParticipationOptions();
-    
-    // Check previously selected checkboxes
+
     if (item.participations) {
         item.participations.forEach(val => {
-            const cb = document.querySelector(`input[value="${val}"]`);
+            const cb = document.querySelector(`.participation-checkbox[value="${val}"]`);
             if (cb) cb.checked = true;
         });
     }
@@ -364,50 +430,65 @@ function editRecord(id) {
     submitButton.textContent = "↻ Update Registration";
     cancelButton.hidden = false;
 
-    document.getElementById("eventFormSection").scrollIntoView({ behavior: "smooth" });
-    showMessage("Loaded record for editing.", "success");
+    showMessage("Edit details and click Update Registration.", "success");
+
+    document.getElementById("eventFormSection").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function deleteRecord(id) {
-    if (!confirm("Are you sure you want to delete this registration?")) return;
+function deleteEvent(id) {
+    const item = events.find(event => event.id === id);
+    if (!item) return;
 
-    events = events.filter(e => e.id !== id);
+    if (!confirm('Are you sure you want to delete "' + item.title + '"?')) return;
+
+    const previousEvents = events;
+    events = events.filter(event => event.id !== id);
+
     if (saveEvents()) {
         if (editingEventId === id) clearForm();
         renderEvents();
-        showMessage("Record deleted successfully!", "success");
+        showMessage("Registration deleted successfully!", "success");
+    } else {
+        events = previousEvents;
     }
 }
 
-// Modal closing handlers
-function hideModal() {
-    detailsModal.hidden = true;
-    detailsModal.style.display = "none";
-}
-closeModal.addEventListener("click", hideModal);
-modalCloseButton.addEventListener("click", hideModal);
-
-// ============================================
-// EVENT LISTENERS & INITIALIZATION
-// ============================================
-cancelButton.addEventListener("click", clearForm);
-clearButton.addEventListener("click", clearForm);
+// Form buttons
+cancelButton.addEventListener("click", () => { clearForm(); showMessage("Editing cancelled.", "success"); });
+clearButton.addEventListener("click", () => { clearForm(); showMessage("Form cleared.", "success"); });
 searchInput.addEventListener("input", renderEvents);
 filterType.addEventListener("change", renderEvents);
 
-// Theme Toggle
+// Modal Close Handlers
+function hideModal() { detailsModal.hidden = true; }
+closeModal.addEventListener("click", hideModal);
+modalCloseButton.addEventListener("click", hideModal);
+detailsModal.addEventListener("click", (e) => { if (e.target === detailsModal) hideModal(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !detailsModal.hidden) hideModal(); });
+
+// Theme toggle
+function updateThemeIcon() {
+    const isDark = document.body.classList.contains("dark-theme");
+    themeIcon.textContent = isDark ? "☀" : "☾";
+}
+
+function loadTheme() {
+    try {
+        if (localStorage.getItem("eventTheme") === "dark") {
+            document.body.classList.add("dark-theme");
+        }
+    } catch (e) {}
+    updateThemeIcon();
+}
+
 themeToggle.addEventListener("click", function () {
     document.body.classList.toggle("dark-theme");
     const isDark = document.body.classList.contains("dark-theme");
-    themeIcon.textContent = isDark ? "☀" : "☾";
-    try { localStorage.setItem("collegeTheme", isDark ? "dark" : "light"); } catch(e){}
+    try { localStorage.setItem("eventTheme", isDark ? "dark" : "light"); } catch (e) {}
+    updateThemeIcon();
 });
 
-// Load Theme & Start
-if (localStorage.getItem("collegeTheme") === "dark") {
-    document.body.classList.add("dark-theme");
-    themeIcon.textContent = "☀";
-}
-
+// Initialization
 createdDate.value = getToday();
+loadTheme();
 renderEvents();
