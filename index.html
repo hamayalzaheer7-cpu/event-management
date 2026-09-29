@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <a href="#" class="brand">
+                <span class="brand-icon">▦</span>
+                <span>Event <b>Management System</b></span>
+            </a>
+
+            <div class="header-right">
+                <span class="header-tag">Plan <i>•</i> Organize <i>•</i> Celebrate</span>
+                <button id="themeToggle" class="theme-toggle" type="button"
+                        aria-label="Switch color theme" title="Switch theme">
+                    <span id="themeIcon">☾</span>
+                    <span class="toggle-track"><span class="toggle-knob"></span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- Welcome Banner -->
+        <section class="hero">
+            <div class="hero-content">
+                <span class="eyebrow">✦ &nbsp; MANAGE YOUR EVENTS</span>
+                <h1>Welcome to <span>Event Management System!</span></h1>
+                <p>Create, edit, delete and manage your events all in one place.
+                   Keep track of your important moments with ease.</p>
+                <a href="#eventFormSection" class="hero-button">＋ Create Your Event</a>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+                <div class="art-circle"></div>
+                <div class="calendar-art">
+                    <div class="calendar-top"></div>
+                    <span class="calendar-star">★</span>
+                    <div class="calendar-dots">▦ &nbsp; ▦ &nbsp; ▦<br><br>▦ &nbsp; ▦ &nbsp; ▦</div>
+                </div>
+                <div class="art-clock">◷</div>
+                <span class="spark spark-one">✦</span>
+                <span class="spark spark-two">✧</span>
+            </div>
+        </section>
+
+        <!-- Dashboard Statistics -->
+        <section class="stats-grid">
+            <div class="stat-card stat-purple">
+                <div class="stat-icon">▦</div>
+                <div><p>Total Events</p><h2 id="totalEvents">0</h2></div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-icon">✓</div>
+                <div><p>Upcoming Events</p><h2 id="upcomingEvents">0</h2></div>
+            </div>
+            <div class="stat-card stat-pink">
+                <div class="stat-icon">☆</div>
+                <div><p>This Month</p><h2 id="monthlyEvents">0</h2></div>
+            </div>
+        </section>
+
+        <!-- Create / Edit Form -->
+        <section class="panel form-panel" id="eventFormSection">
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">EVENT PLANNER</span>
+                    <h2 id="formHeading">Add New Event</h2>
+                    <p>Create your next memorable event.</p>
+                </div>
+                <span class="heading-symbol">✎</span>
+            </div>
+
+            <form id="eventForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title <span>*</span></label>
+                        <input type="text" id="eventTitle" maxlength="100"
+                               placeholder="Enter event title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="createdDate">Created Date <span>*</span></label>
+                        <input type="date" id="createdDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventDate">Event Date <span>*</span></label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventType">Event Type <span>*</span></label>
+                        <select id="eventType" required>
+                            <option value="">Select event type</option>
+                            <option>Sports Gala</option>
+                            <option>Farewell Party</option>
+                            <option>Seminar</option>
+                            <option>Workshop</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="description">Description <span>*</span></label>
+                        <textarea id="description" rows="3" maxlength="1000"
+                                  placeholder="Write something about your event..."
+                                  required></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="submitButton">
+                        ＋ Add Event
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancelButton" hidden>
+                        ↩ Cancel Edit
+                    </button>
+                    <button type="button" class="btn btn-ghost" id="clearButton">
+                        × Clear
+                    </button>
+                </div>
+
+                <p id="message" class="message" role="status" aria-live="polite"></p>
+            </form>
+        </section>
+
+        <!-- Events Section -->
+        <section class="events-section" id="eventsSection">
+            <div class="section-heading events-title">
+                <div>
+                    <span class="eyebrow">YOUR COLLECTION</span>
+                    <h2>All Events <span class="title-star">✦</span></h2>
+                    <p>Here are all the events you have created.</p>
+                </div>
+                <span class="event-count"><b id="shownEvents">0</b> events shown</span>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="filters">
+                <div class="search-box">
+                    <span>⌕</span>
+                    <input type="search" id="searchInput"
+                           placeholder="Search events by title...">
+                </div>
+
+                <select id="filterType" aria-label="Filter events by type">
+                    <option value="All">All Event Types</option>
+                    <option>Sports Gala</option>
+                    <option>Farewell Party</option>
+                    <option>Seminar</option>
+                    <option>Workshop</option>
+                    <option>Other</option>
+                </select>
+            </div>
+
+            <!-- JavaScript creates the event cards here -->
+            <div id="eventsContainer" class="events-grid"></div>
+        </section>
+
+    </main>
+
+    <!-- Event Details Modal -->
+    <div id="detailsModal" class="modal" role="dialog"
+         aria-modal="true" aria-labelledby="modalTitle" hidden>
+        <div class="modal-content">
+            <button type="button" id="closeModal" class="close-button"
+                    aria-label="Close details">×</button>
+
+            <div id="modalBanner" class="modal-banner">
+                <span id="modalBannerIcon">✦</span>
+                <span class="modal-banner-label">EVENT DETAILS</span>
+            </div>
+
+            <div class="modal-body">
+                <span id="modalType" class="event-type">Seminar</span>
+                <h2 id="modalTitle">Event Title</h2>
+
+                <div class="detail-line">
+                    <span>▦</span>
+                    <p><b>Event Date</b><br><span id="modalEventDate"></span></p>
+                </div>
+                <div class="detail-line">
+                    <span>✎</span>
+                    <p><b>Created Date</b><br><span id="modalCreatedDate"></span></p>
+                </div>
+                <div class="detail-description">
+                    <b>Description</b>
+                    <p id="modalDescription"></p>
+                </div>
+
+                <button type="button" id="modalCloseButton"
+                        class="btn btn-primary modal-close-btn">Close Details</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <p>✦ Event Management System</p>
+            <span>Made with HTML, CSS & JavaScript</span>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
