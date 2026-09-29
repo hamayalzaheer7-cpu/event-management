@@ -1,694 +1,418 @@
 
-// ============================================
-// EVENT MANAGEMENT SYSTEM - JAVASCRIPT
-// ============================================
-
 // Get HTML elements
 const eventForm = document.getElementById("eventForm");
-const eventTitle = document.getElementById("eventTitle");
-const createdDate = document.getElementById("createdDate");
-const eventDate = document.getElementById("eventDate");
-const eventType = document.getElementById("eventType");
-const description = document.getElementById("description");
-
-const submitButton = document.getElementById("submitButton");
-const cancelButton = document.getElementById("cancelButton");
-const clearButton = document.getElementById("clearButton");
-const formHeading = document.getElementById("formHeading");
-const message = document.getElementById("message");
-
+const formSection = document.getElementById("formSection");
 const eventsContainer = document.getElementById("eventsContainer");
-const totalEvents = document.getElementById("totalEvents");
-const upcomingEvents = document.getElementById("upcomingEvents");
-const monthlyEvents = document.getElementById("monthlyEvents");
-const shownEvents = document.getElementById("shownEvents");
-
 const searchInput = document.getElementById("searchInput");
 const filterType = document.getElementById("filterType");
-
+const filterStatus = document.getElementById("filterStatus");
+const formMessage = document.getElementById("formMessage");
+const saveBtn = document.getElementById("saveBtn");
 const detailsModal = document.getElementById("detailsModal");
-const closeModal = document.getElementById("closeModal");
-const modalCloseButton = document.getElementById("modalCloseButton");
 
-const themeToggle = document.getElementById("themeToggle");
-const themeIcon = document.getElementById("themeIcon");
+// Load saved events from localStorage
+let events = JSON.parse(localStorage.getItem("myEvents")) || [];
+let editingId = null;
 
-// Remember which event is being edited
-let editingEventId = null;
-
-// ============================================
-// DATE HELPER
-// ============================================
-
+// Get today's date in local time
 function getToday() {
-    const today = new Date();
-
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
 }
 
-// ============================================
-// LOAD EVENTS FROM LOCALSTORAGE
-// ============================================
+// Set default created date
+document.getElementById("createdDate").value = getToday();
 
-let events = [];
-
-try {
-    const savedEvents = localStorage.getItem("myEvents");
-
-    if (savedEvents) {
-        const parsedEvents = JSON.parse(savedEvents);
-
-        if (Array.isArray(parsedEvents)) {
-            events = parsedEvents.filter(function (item) {
-                return item &&
-                    typeof item.id === "string" &&
-                    typeof item.title === "string" &&
-                    typeof item.createdDate === "string" &&
-                    typeof item.eventDate === "string" &&
-                    typeof item.type === "string" &&
-                    typeof item.description === "string";
-            });
-        }
-    }
-} catch (error) {
-    events = [];
-    console.error("Could not load saved events.", error);
-}
-
-// ============================================
-// SAVE EVENTS
-// ============================================
-
+// Save events in localStorage
 function saveEvents() {
-    try {
-        localStorage.setItem("myEvents", JSON.stringify(events));
-        return true;
-    } catch (error) {
-        console.error("Could not save events.", error);
-        showMessage(
-            "Could not save data. Browser storage may be unavailable.",
-            "error"
-        );
-        return false;
+    localStorage.setItem("myEvents", JSON.stringify(events));
+}
+
+// Escape text before displaying user-entered information in HTML
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, function (char) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[char];
+    });
+}
+
+// Format dates for display
+function formatDate(date) {
+    if (!date) return "Not provided";
+
+    const parts = date.split("-");
+    if (parts.length !== 3) return date;
+
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+// Determine event status
+function getStatus(eventDate) {
+    if (eventDate < getToday()) {
+        return "Completed";
     }
+
+    if (eventDate === getToday()) {
+        return "Today";
+    }
+
+    return "Upcoming";
 }
 
-// ============================================
-// SUCCESS AND ERROR MESSAGES
-// ============================================
-
-function showMessage(text, type) {
-    message.textContent = text;
-    message.className = "message " + type;
+// Show the form
+function showForm() {
+    formSection.style.display = "block";
+    formSection.scrollIntoView({ behavior: "smooth" });
 }
 
-// ============================================
-// CLEAR AND RESET THE FORM
-// ============================================
+// Hide the form
+function hideForm() {
+    formSection.style.display = "none";
+    resetForm();
+}
 
-function clearForm() {
+// Clear the form
+function resetForm() {
     eventForm.reset();
-    editingEventId = null;
+    editingId = null;
 
-    formHeading.textContent = "Add New Event";
-    submitButton.textContent = "＋ Add Event";
-    cancelButton.hidden = true;
-
-    createdDate.value = getToday();
+    document.getElementById("formHeading").textContent = "Add New Event";
+    saveBtn.textContent = "Add Event";
+    formMessage.textContent = "";
+    document.getElementById("createdDate").value = getToday();
 }
 
-// ============================================
-// FORM VALIDATION
-// ============================================
+// Add or update an event
+eventForm.addEventListener("submit", function (e) {
+    e.preventDefault();
 
-function isValidDate(value) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        return false;
-    }
+    const title = document.getElementById("eventTitle").value.trim();
+    const createdDate = document.getElementById("createdDate").value;
+    const eventDate = document.getElementById("eventDate").value;
+    const eventTime = document.getElementById("eventTime").value;
+    const eventType = document.getElementById("eventType").value;
+    const eventLocation = document.getElementById("eventLocation").value.trim();
+    const eventOrganizer = document.getElementById("eventOrganizer").value.trim();
+    const eventCapacity = document.getElementById("eventCapacity").value;
+    const eventDescription = document.getElementById("eventDescription").value.trim();
 
-    const parts = value.split("-").map(Number);
-
-    const date = new Date(
-        parts[0],
-        parts[1] - 1,
-        parts[2]
-    );
-
-    return date.getFullYear() === parts[0] &&
-        date.getMonth() === parts[1] - 1 &&
-        date.getDate() === parts[2];
-}
-
-function validateForm() {
-    const title = eventTitle.value.trim();
-    const created = createdDate.value;
-    const date = eventDate.value;
-    const type = eventType.value;
-    const eventDescription = description.value.trim();
-
-    if (!title || !created || !date || !type || !eventDescription) {
-        showMessage("Please fill in all required fields.", "error");
-        return false;
-    }
-
-    const allowedTypes = [
-        "Sports Gala",
-        "Farewell Party",
-        "Seminar",
-        "Workshop",
-        "Other"
-    ];
-
-    if (!allowedTypes.includes(type)) {
-        showMessage("Please select a valid event type.", "error");
-        return false;
-    }
-
-    if (!isValidDate(created) || !isValidDate(date)) {
-        showMessage("Please enter valid dates.", "error");
-        return false;
-    }
-
-    if (date < created) {
-        showMessage(
-            "Event date cannot be earlier than created date.",
-            "error"
-        );
-        return false;
-    }
-
-    if (title.length > 100 || eventDescription.length > 1000) {
-        showMessage("Please check the length of your information.", "error");
-        return false;
-    }
-
-    return true;
-}
-
-// ============================================
-// CREATE OR UPDATE EVENT
-// ============================================
-
-eventForm.addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    if (!validateForm()) {
+    // Validate dates
+    if (eventDate < createdDate) {
+        formMessage.textContent = "Event date cannot be before created date.";
         return;
     }
 
-    // Collect the form information
+    if (eventCapacity && Number(eventCapacity) < 1) {
+        formMessage.textContent = "Participant capacity must be at least 1.";
+        return;
+    }
+
+    // Create event object
     const eventData = {
-        title: eventTitle.value.trim(),
-        createdDate: createdDate.value,
-        eventDate: eventDate.value,
-        type: eventType.value,
-        description: description.value.trim()
+        title: title,
+        createdDate: createdDate,
+        eventDate: eventDate,
+        eventTime: eventTime,
+        eventType: eventType,
+        eventLocation: eventLocation,
+        eventOrganizer: eventOrganizer,
+        eventCapacity: eventCapacity,
+        eventDescription: eventDescription
     };
 
-    const previousEvents = events;
+    if (editingId !== null) {
+        // Update existing event
+        const index = events.findIndex(event => event.id === editingId);
 
-    // UPDATE an existing event
-    if (editingEventId !== null) {
-        const index = events.findIndex(function (item) {
-            return item.id === editingEventId;
-        });
+        if (index !== -1) {
+            events[index] = {
+                ...events[index],
+                ...eventData
+            };
 
-        if (index === -1) {
-            showMessage("Event not found.", "error");
-            clearForm();
-            return;
+            formMessage.textContent = "Event updated successfully!";
         }
-
-        events = events.slice();
-
-        // Keep the original ID to prevent duplicates
-        events[index] = {
-            id: events[index].id,
-            ...eventData
-        };
-
-        if (saveEvents()) {
-            renderEvents();
-            clearForm();
-            showMessage("Event updated successfully!", "success");
-        } else {
-            events = previousEvents;
-        }
-
     } else {
-        // CREATE a new event
-        const newEvent = {
-            id: Date.now().toString() + "-" +
-                Math.random().toString(36).slice(2),
-            ...eventData
-        };
-
-        events = events.concat(newEvent);
-
-        if (saveEvents()) {
-            renderEvents();
-            clearForm();
-            showMessage("Event added successfully!", "success");
-        } else {
-            events = previousEvents;
-        }
+        // Add new event
+        eventData.id = Date.now();
+        events.push(eventData);
+        formMessage.textContent = "Event added successfully!";
     }
+
+    saveEvents();
+    renderEvents();
+    resetForm();
+    hideForm();
 });
 
-// ============================================
-// EVENT CARD COLORS AND ICONS
-// ============================================
-
-function getEventStyle(type) {
-    const styles = {
-        "Sports Gala": {
-            cover: "cover-purple",
-            icon: "⚽"
-        },
-        "Farewell Party": {
-            cover: "cover-pink",
-            icon: "🎉"
-        },
-        "Seminar": {
-            cover: "cover-blue",
-            icon: "🎓"
-        },
-        "Workshop": {
-            cover: "cover-green",
-            icon: "💻"
-        },
-        "Other": {
-            cover: "cover-indigo",
-            icon: "🎵"
-        }
-    };
-
-    return styles[type] || {
-        cover: "cover-orange",
-        icon: "✦"
-    };
-}
-
-// ============================================
-// CREATE A SAFE TEXT ELEMENT
-// ============================================
-
-function createTextElement(tag, className, text) {
-    const element = document.createElement(tag);
-
-    element.className = className;
-    element.textContent = text;
-
-    return element;
-}
-
-// ============================================
-// DISPLAY EVENTS AND UPDATE DASHBOARD
-// ============================================
-
+// Display all events
 function renderEvents() {
-    eventsContainer.replaceChildren();
-
-    const searchText = searchInput.value.trim().toLowerCase();
+    const searchText = searchInput.value.toLowerCase().trim();
     const selectedType = filterType.value;
-    const today = getToday();
+    const selectedStatus = filterStatus.value;
 
-    const now = new Date();
-
-    const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
-    const currentYear = String(now.getFullYear());
-
-    // Update dashboard statistics
-    totalEvents.textContent = events.length;
-
-    upcomingEvents.textContent = events.filter(function (item) {
-        return item.eventDate >= today;
-    }).length;
-
-    monthlyEvents.textContent = events.filter(function (item) {
-        return item.eventDate.startsWith(currentYear + "-" + currentMonth);
-    }).length;
-
-    // Search and filter events
-    const filteredEvents = events.filter(function (item) {
-        const matchesSearch = item.title.toLowerCase().includes(searchText);
+    // Filter events according to search and selections
+    const filteredEvents = events.filter(function (event) {
+        const matchesSearch =
+            event.title.toLowerCase().includes(searchText) ||
+            event.eventDescription.toLowerCase().includes(searchText) ||
+            (event.eventLocation || "").toLowerCase().includes(searchText) ||
+            (event.eventOrganizer || "").toLowerCase().includes(searchText);
 
         const matchesType =
-            selectedType === "All" || item.type === selectedType;
+            selectedType === "All" || event.eventType === selectedType;
 
-        return matchesSearch && matchesType;
+        const matchesStatus =
+            selectedStatus === "All" ||
+            getStatus(event.eventDate) === selectedStatus;
+
+        return matchesSearch && matchesType && matchesStatus;
     });
 
-    shownEvents.textContent = filteredEvents.length;
+    // Sort events by date
+    filteredEvents.sort((a, b) =>
+        a.eventDate.localeCompare(b.eventDate)
+    );
 
-    // Display the empty state when needed
+    // Show empty message if no events exist
     if (filteredEvents.length === 0) {
-        const emptyBox = document.createElement("div");
-        emptyBox.className = "empty-message";
+        eventsContainer.innerHTML = `
+            <div class="empty-message">
+                <h3>No events found! 📅</h3>
+                <p>Add a new event or change your search filters.</p>
+            </div>
+        `;
+    } else {
+        eventsContainer.innerHTML = filteredEvents.map(function (event) {
+            const status = getStatus(event.eventDate);
+            const statusClass = status.toLowerCase();
 
-        const icon = createTextElement("div", "empty-icon", "▦");
-        const heading = createTextElement(
-            "h3",
-            "",
-            events.length === 0
-                ? "No events added yet!"
-                : "No matching events found."
-        );
+            return `
+                <div class="event-card">
+                    <span class="category-badge">
+                        ${escapeHTML(event.eventType)}
+                    </span>
 
-        const paragraph = createTextElement(
-            "p",
-            "",
-            events.length === 0
-                ? "Add your first event to get started."
-                : "Try another title or event type."
-        );
+                    <span class="status-badge status-${statusClass}">
+                        ${status}
+                    </span>
 
-        emptyBox.append(icon, heading, paragraph);
+                    <h3>${escapeHTML(event.title)}</h3>
 
-        if (events.length === 0) {
-            const addButton = createTextElement(
-                "button",
-                "btn btn-primary",
-                "＋ Add Event"
-            );
+                    <p>📅 <strong>Date:</strong>
+                        ${formatDate(event.eventDate)}
+                    </p>
 
-            addButton.type = "button";
+                    <p>⏰ <strong>Time:</strong>
+                        ${escapeHTML(event.eventTime || "Not provided")}
+                    </p>
 
-            addButton.addEventListener("click", function () {
-                document.getElementById("eventFormSection").scrollIntoView({
-                    behavior: "smooth"
-                });
-                eventTitle.focus();
-            });
+                    <p>📍 <strong>Location:</strong>
+                        ${escapeHTML(event.eventLocation || "Not provided")}
+                    </p>
 
-            emptyBox.appendChild(addButton);
-        }
+                    <p>${escapeHTML(event.eventDescription.length > 100
+                        ? event.eventDescription.substring(0, 100) + "..."
+                        : event.eventDescription)}
+                    </p>
 
-        eventsContainer.appendChild(emptyBox);
-        return;
+                    <div class="event-actions">
+                        <button class="view-btn"
+                            onclick="viewEvent(${event.id})">
+                            View Details
+                        </button>
+
+                        <button class="edit-btn"
+                            onclick="editEvent(${event.id})">
+                            Edit
+                        </button>
+
+                        <button class="delete-btn"
+                            onclick="deleteEvent(${event.id})">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join("");
     }
 
-    // Create cards for each event
-    filteredEvents.forEach(function (item) {
-        const style = getEventStyle(item.type);
+    document.getElementById("eventCount").textContent =
+        `${filteredEvents.length} event(s) found`;
 
-        const card = document.createElement("article");
-        card.className = "event-card";
-
-        // Colorful cover
-        const cover = document.createElement("div");
-        cover.className = "event-cover " + style.cover;
-
-        const badge = createTextElement(
-            "span",
-            "cover-badge",
-            item.type
-        );
-
-        const dateBadge = createTextElement(
-            "span",
-            "cover-date",
-            item.eventDate
-        );
-
-        const coverIcon = createTextElement(
-            "span",
-            "cover-icon",
-            style.icon
-        );
-
-        cover.append(badge, dateBadge, coverIcon);
-
-        // Card information
-        const body = document.createElement("div");
-        body.className = "event-card-body";
-
-        const title = createTextElement("h3", "", item.title);
-
-        const created = createTextElement(
-            "p",
-            "event-meta",
-            "▦  Created: " + item.createdDate
-        );
-
-        const typeLine = createTextElement(
-            "p",
-            "event-meta",
-            "◇  " + item.type
-        );
-
-        const descriptionText = item.description.length > 95
-            ? item.description.substring(0, 95) + "..."
-            : item.description;
-
-        const descriptionElement = createTextElement(
-            "p",
-            "event-description",
-            descriptionText
-        );
-
-        // Card action buttons
-        const buttons = document.createElement("div");
-        buttons.className = "card-buttons";
-
-        const viewButton = createTextElement(
-            "button", "btn btn-view", "◎ View Details"
-        );
-        viewButton.type = "button";
-
-        const editButton = createTextElement(
-            "button", "btn btn-edit", "✎ Edit"
-        );
-        editButton.type = "button";
-
-        const deleteButton = createTextElement(
-            "button", "btn btn-delete", "♲ Delete"
-        );
-        deleteButton.type = "button";
-
-        viewButton.addEventListener("click", function () {
-            viewEvent(item.id);
-        });
-
-        editButton.addEventListener("click", function () {
-            editEvent(item.id);
-        });
-
-        deleteButton.addEventListener("click", function () {
-            deleteEvent(item.id);
-        });
-
-        buttons.append(viewButton, editButton, deleteButton);
-
-        body.append(title, created, typeLine, descriptionElement, buttons);
-
-        card.append(cover, body);
-
-        eventsContainer.appendChild(card);
-    });
+    updateDashboard();
 }
 
-// ============================================
-// READ: VIEW EVENT DETAILS
-// ============================================
+// Update dashboard statistics
+function updateDashboard() {
+    const upcoming = events.filter(event =>
+        getStatus(event.eventDate) === "Upcoming"
+    ).length;
 
+    const completed = events.filter(event =>
+        getStatus(event.eventDate) === "Completed"
+    ).length;
+
+    const categories = new Set(events.map(event => event.eventType));
+
+    document.getElementById("totalEvents").textContent = events.length;
+    document.getElementById("upcomingEvents").textContent = upcoming;
+    document.getElementById("completedEvents").textContent = completed;
+    document.getElementById("totalCategories").textContent = categories.size;
+}
+
+// View complete event details
 function viewEvent(id) {
-    const item = events.find(function (event) {
-        return event.id === id;
-    });
+    const event = events.find(event => event.id === id);
 
-    if (!item) {
-        showMessage("Event not found.", "error");
-        return;
-    }
+    if (!event) return;
 
-    const style = getEventStyle(item.type);
+    const status = getStatus(event.eventDate);
 
-    document.getElementById("modalTitle").textContent = item.title;
-    document.getElementById("modalType").textContent = item.type;
-    document.getElementById("modalEventDate").textContent = item.eventDate;
-    document.getElementById("modalCreatedDate").textContent = item.createdDate;
-    document.getElementById("modalDescription").textContent = item.description;
+    document.getElementById("modalTitle").textContent = event.title;
 
-    document.getElementById("modalBannerIcon").textContent = style.icon;
-    document.getElementById("modalBanner").className =
-        "modal-banner " + style.cover;
+    document.getElementById("modalDetails").innerHTML = `
+        <div class="detail-row">
+            <strong>Event Type</strong>
+            <p>${escapeHTML(event.eventType)}</p>
+        </div>
 
-    detailsModal.hidden = false;
-    closeModal.focus();
+        <div class="detail-row">
+            <strong>Status</strong>
+            <p>${status}</p>
+        </div>
+
+        <div class="detail-row">
+            <strong>Created Date</strong>
+            <p>${formatDate(event.createdDate)}</p>
+        </div>
+
+        <div class="detail-row">
+            <strong>Event Date</strong>
+            <p>${formatDate(event.eventDate)}</p>
+        </div>
+
+        <div class="detail-row">
+            <strong>Event Time</strong>
+            <p>${escapeHTML(event.eventTime || "Not provided")}</p>
+        </div>
+
+        <div class="detail-row">
+            <strong>Location</strong>
+            <p>${escapeHTML(event.eventLocation || "Not provided")}</p>
+        </div>
+
+        <div class="detail-row">
+            <strong>Organizer</strong>
+            <p>${escapeHTML(event.eventOrganizer || "Not provided")}</p>
+        </div>
+
+        <div class="detail-row">
+            <strong>Participant Capacity</strong>
+            <p>${escapeHTML(event.eventCapacity || "Not specified")}</p>
+        </div>
+
+        <div class="detail-row">
+            <strong>Description</strong>
+            <p>${escapeHTML(event.eventDescription)}</p>
+        </div>
+    `;
+
+    detailsModal.style.display = "flex";
 }
 
-// ============================================
-// UPDATE: EDIT EVENT
-// ============================================
+// Close event details modal
+function closeModal() {
+    detailsModal.style.display = "none";
+}
 
+// Close modal when clicking outside it
+detailsModal.addEventListener("click", function (e) {
+    if (e.target === detailsModal) {
+        closeModal();
+    }
+});
+
+// Edit an existing event
 function editEvent(id) {
-    const item = events.find(function (event) {
-        return event.id === id;
-    });
+    const event = events.find(event => event.id === id);
 
-    if (!item) {
-        showMessage("Event not found.", "error");
-        return;
-    }
+    if (!event) return;
 
-    editingEventId = id;
+    editingId = id;
 
-    // Fill the form with existing information
-    eventTitle.value = item.title;
-    createdDate.value = item.createdDate;
-    eventDate.value = item.eventDate;
-    eventType.value = item.type;
-    description.value = item.description;
+    document.getElementById("eventTitle").value = event.title;
+    document.getElementById("createdDate").value = event.createdDate;
+    document.getElementById("eventDate").value = event.eventDate;
+    document.getElementById("eventTime").value = event.eventTime || "";
+    document.getElementById("eventType").value = event.eventType;
+    document.getElementById("eventLocation").value = event.eventLocation || "";
+    document.getElementById("eventOrganizer").value = event.eventOrganizer || "";
+    document.getElementById("eventCapacity").value = event.eventCapacity || "";
+    document.getElementById("eventDescription").value = event.eventDescription;
 
-    // Change form heading and button
-    formHeading.textContent = "Update Your Event";
-    submitButton.textContent = "↻ Update Event";
-    cancelButton.hidden = false;
+    document.getElementById("formHeading").textContent = "Edit Event";
+    saveBtn.textContent = "Update Event";
+    formMessage.textContent = "";
 
-    showMessage("Edit the details and click Update Event.", "success");
-
-    document.getElementById("eventFormSection").scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
+    showForm();
 }
 
-// ============================================
-// DELETE EVENT
-// ============================================
-
+// Delete an event
 function deleteEvent(id) {
-    const item = events.find(function (event) {
-        return event.id === id;
-    });
+    const event = events.find(event => event.id === id);
 
-    if (!item) {
-        showMessage("Event not found.", "error");
-        return;
-    }
+    if (!event) return;
 
     const confirmed = confirm(
-        'Are you sure you want to delete "' + item.title + '"?'
+        `Are you sure you want to delete "${event.title}"?`
     );
 
-    if (!confirmed) {
-        return;
-    }
+    if (confirmed) {
+        events = events.filter(event => event.id !== id);
 
-    const previousEvents = events;
-
-    events = events.filter(function (event) {
-        return event.id !== id;
-    });
-
-    if (saveEvents()) {
-        if (editingEventId === id) {
-            clearForm();
-        }
-
+        saveEvents();
         renderEvents();
-        showMessage("Event deleted successfully!", "success");
-    } else {
-        events = previousEvents;
+
+        if (editingId === id) {
+            resetForm();
+            hideForm();
+        }
     }
 }
 
-// ============================================
-// FORM BUTTONS
-// ============================================
-
-cancelButton.addEventListener("click", function () {
-    clearForm();
-    showMessage("Editing cancelled.", "success");
-});
-
-clearButton.addEventListener("click", function () {
-    clearForm();
-    showMessage("Form cleared.", "success");
-});
-
-// ============================================
-// SEARCH AND FILTER
-// ============================================
-
+// Search and filters
 searchInput.addEventListener("input", renderEvents);
 filterType.addEventListener("change", renderEvents);
+filterStatus.addEventListener("change", renderEvents);
 
-// ============================================
-// CLOSE DETAILS MODAL
-// ============================================
+// Dark mode toggle
+const themeBtn = document.getElementById("themeBtn");
 
-function hideModal() {
-    detailsModal.hidden = true;
+// Restore saved theme
+if (localStorage.getItem("eventTheme") === "dark") {
+    document.body.classList.add("dark");
+    themeBtn.textContent = "☀️ Light Mode";
 }
 
-closeModal.addEventListener("click", hideModal);
-modalCloseButton.addEventListener("click", hideModal);
+themeBtn.addEventListener("click", function () {
+    document.body.classList.toggle("dark");
 
-detailsModal.addEventListener("click", function (event) {
-    if (event.target === detailsModal) {
-        hideModal();
-    }
+    const isDark = document.body.classList.contains("dark");
+
+    localStorage.setItem("eventTheme", isDark ? "dark" : "light");
+
+    themeBtn.textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
 });
 
-document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && !detailsModal.hidden) {
-        hideModal();
-    }
-});
-
-// ============================================
-// DYNAMIC LIGHT AND DARK THEME
-// ============================================
-
-function updateThemeIcon() {
-    const isDark = document.body.classList.contains("dark-theme");
-
-    themeIcon.textContent = isDark ? "☀" : "☾";
-    themeToggle.setAttribute(
-        "aria-label",
-        isDark ? "Switch to light theme" : "Switch to dark theme"
-    );
-}
-
-function loadTheme() {
-    try {
-        const savedTheme = localStorage.getItem("eventTheme");
-
-        if (savedTheme === "dark") {
-            document.body.classList.add("dark-theme");
-        }
-    } catch (error) {
-        console.log("Using the default light theme.");
-    }
-
-    updateThemeIcon();
-}
-
-themeToggle.addEventListener("click", function () {
-    document.body.classList.toggle("dark-theme");
-
-    const isDark = document.body.classList.contains("dark-theme");
-
-    try {
-        localStorage.setItem("eventTheme", isDark ? "dark" : "light");
-    } catch (error) {
-        console.log("Theme preference could not be saved.");
-    }
-
-    updateThemeIcon();
-});
-
-// ============================================
-// START THE WEBSITE
-// ============================================
-
-createdDate.value = getToday();
-
-loadTheme();
+// Initial page load
 renderEvents();
